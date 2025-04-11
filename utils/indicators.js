@@ -45,7 +45,7 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
           },
           {
             type: 'text',
-            text: `今日收盤：${close} 元`,
+            text: `最新價格：${close} 元`,
             size: 'sm',
             color: '#888888'
           },
@@ -95,6 +95,13 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
             size: 'sm',
             wrap: true,
             margin: 'sm'
+          },
+          {
+            type: 'text',
+            text: `警語說明： 僅供參考，投資人應獨立判斷。 \n審慎投資，自負風險 `,
+            weight: 'bold',
+            margin: 'md',
+            size: 'md'
           }
         ]
       }
