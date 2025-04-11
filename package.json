@@ -1,0 +1,14 @@
+{
+    "name": "twse-linebot",
+    "version": "1.0.0",
+    "main": "api/webhook.js",
+    "type": "module",
+    "scripts": {
+      "dev": "vercel dev"
+    },
+    "dependencies": {
+      "@line/bot-sdk": "^7.5.0",
+      "axios": "^1.6.0"
+    }
+  }
+  
