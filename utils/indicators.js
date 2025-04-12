@@ -26,6 +26,38 @@ export function calcBollingerBands(closes) {
 }
 
 export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName) {
+  // 計算趨勢強度
+  const trendStrength = Math.abs(ma5 - ma20) / ma20 * 100;
+  
+  // 判斷趨勢
+  let trend = '';
+  if (ma5 > ma20) {
+    trend = trendStrength > 2 ? '強勢上漲' : '緩步上漲';
+  } else {
+    trend = trendStrength > 2 ? '強勢下跌' : '緩步下跌';
+  }
+
+  // 判斷震盪程度
+  const volatility = ((upper - lower) / ma20 * 100).toFixed(2);
+  let volatilityLevel = '';
+  if (volatility > 5) {
+    volatilityLevel = '高波動';
+  } else if (volatility > 3) {
+    volatilityLevel = '中波動';
+  } else {
+    volatilityLevel = '低波動';
+  }
+
+  // 判斷盤整狀態
+  let consolidation = '';
+  if (Math.abs(ma5 - ma20) / ma20 < 0.01 && volatility < 3) {
+    consolidation = '盤整格局';
+  } else if (Math.abs(ma5 - ma20) / ma20 < 0.02 && volatility < 4) {
+    consolidation = '區間整理';
+  } else {
+    consolidation = '趨勢行情';
+  }
+
   return {
     type: 'flex',
     altText: `${displayName} 技術分析報告`,
@@ -98,8 +130,34 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
           },
           {
             type: 'text',
+            text: `📌 趨勢判斷：${trend}\n📌 波動程度：${volatilityLevel} (${volatility}%)\n📌 行情型態：${consolidation}`,
+            size: 'sm',
+            wrap: true,
+            margin: 'sm'
+          },
+          {
+            type: 'separator',
+            margin: 'md'
+          },
+          {
+            type: 'text',
+            text: '💡 操作建議',
+            weight: 'bold',
+            margin: 'md',
+            size: 'md'
+          },
+          {
+            type: 'text',
+            text: `${getTradingAdvice(trend, rsi, volatility, consolidation)}`,
+            size: 'sm',
+            wrap: true,
+            margin: 'sm'
+          },
+          {
+            type: 'text',
             text: `警語說明： 僅供參考，投資人應獨立判斷。 \n審慎投資，自負風險 `,
             weight: 'bold',
+            wrap: true,
             margin: 'md',
             size: 'md'
           }
@@ -107,4 +165,36 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
       }
     }
   };
+}
+
+function getTradingAdvice(trend, rsi, volatility, consolidation) {
+  let advice = '';
+  
+  // 根據趨勢提供建議
+  if (trend.includes('強勢')) {
+    advice += '趨勢明確，可順勢操作。';
+  } else if (trend.includes('緩步')) {
+    advice += '趨勢溫和，建議分批布局。';
+  }
+
+  // 根據 RSI 提供建議
+  if (rsi > 70) {
+    advice += ' RSI 過熱，注意回檔風險。';
+  } else if (rsi < 30) {
+    advice += ' RSI 超賣，可留意反彈機會。';
+  }
+
+  // 根據波動程度提供建議
+  if (volatility > 5) {
+    advice += ' 波動較大，建議控制部位。';
+  }
+
+  // 根據盤整狀態提供建議
+  if (consolidation.includes('盤整')) {
+    advice += ' 盤整格局，可採區間操作。';
+  } else if (consolidation.includes('整理')) {
+    advice += ' 區間整理，建議觀望等待突破。';
+  }
+
+  return advice;
 }
