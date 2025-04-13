@@ -29,33 +29,42 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
   // 計算趨勢強度
   const trendStrength = Math.abs(ma5 - ma20) / ma20 * 100;
   
-  // 判斷趨勢
-  let trend = '';
+  // 判斷趨勢方向
+  let trendDirection = '';
+  let trendDescription = '';
+  
   if (ma5 > ma20) {
-    trend = trendStrength > 2 ? '強勢上漲' : '緩步上漲';
+    if (trendStrength > 3) {
+      trendDirection = '強勢上漲';
+      trendDescription = '多頭趨勢明確，上漲動能強勁';
+    } else if (trendStrength > 1.5) {
+      trendDirection = '上漲';
+      trendDescription = '多頭趨勢，上漲動能穩定';
+    } else {
+      trendDirection = '緩步上漲';
+      trendDescription = '多頭趨勢，但上漲動能較弱';
+    }
   } else {
-    trend = trendStrength > 2 ? '強勢下跌' : '緩步下跌';
+    if (trendStrength > 3) {
+      trendDirection = '強勢下跌';
+      trendDescription = '空頭趨勢明確，下跌壓力大';
+    } else if (trendStrength > 1.5) {
+      trendDirection = '下跌';
+      trendDescription = '空頭趨勢，下跌壓力穩定';
+    } else {
+      trendDirection = '緩步下跌';
+      trendDescription = '空頭趨勢，但下跌壓力較小';
+    }
   }
 
-  // 判斷震盪程度
-  const volatility = ((upper - lower) / ma20 * 100).toFixed(2);
-  let volatilityLevel = '';
-  if (volatility > 5) {
-    volatilityLevel = '高波動';
-  } else if (volatility > 3) {
-    volatilityLevel = '中波動';
+  // 判斷趨勢持續性
+  let trendPersistence = '';
+  if (trendStrength > 2) {
+    trendPersistence = '趨勢持續性高';
+  } else if (trendStrength > 1) {
+    trendPersistence = '趨勢持續性中等';
   } else {
-    volatilityLevel = '低波動';
-  }
-
-  // 判斷盤整狀態
-  let consolidation = '';
-  if (Math.abs(ma5 - ma20) / ma20 < 0.01 && volatility < 3) {
-    consolidation = '盤整格局';
-  } else if (Math.abs(ma5 - ma20) / ma20 < 0.02 && volatility < 4) {
-    consolidation = '區間整理';
-  } else {
-    consolidation = '趨勢行情';
+    trendPersistence = '趨勢持續性低';
   }
 
   return {
@@ -116,21 +125,14 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
           },
           {
             type: 'text',
-            text: '📊 解讀與建議',
+            text: '📊 趨勢分析',
             weight: 'bold',
             margin: 'md',
             size: 'md'
           },
           {
             type: 'text',
-            text: `📌 MA5 ${ma5 > ma20 ? '高於' : '低於'} MA20，${ma5 > ma20 ? '短線趨勢偏多' : '短線轉弱'}。\n📌 RSI14 為 ${rsi}，${rsi > 70 ? '已進入超買區' : rsi < 30 ? '進入超賣區' : '尚屬中性'}。\n📌 收盤價接近 ${close >= upper ? '布林上軌' : close <= lower ? '布林下軌' : '布林中軌附近'}。\n\n🔍 建議：${rsi > 70 ? '短線漲多，可考慮觀望或逢高減碼。' : rsi < 30 ? '超賣區，可留意反彈契機。' : '維持觀望，待突破方向明朗。'}`,
-            size: 'sm',
-            wrap: true,
-            margin: 'sm'
-          },
-          {
-            type: 'text',
-            text: `📌 趨勢判斷：${trend}\n📌 波動程度：${volatilityLevel} (${volatility}%)\n📌 行情型態：${consolidation}`,
+            text: `📌 趨勢方向：${trendDirection}\n📌 趨勢描述：${trendDescription}\n📌 趨勢強度：${trendStrength.toFixed(2)}%\n📌 趨勢持續性：${trendPersistence}`,
             size: 'sm',
             wrap: true,
             margin: 'sm'
@@ -148,7 +150,7 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
           },
           {
             type: 'text',
-            text: `${getTradingAdvice(trend, rsi, volatility, consolidation)}`,
+            text: `${getTradingAdvice(trendDirection, rsi, trendStrength)}`,
             size: 'sm',
             wrap: true,
             margin: 'sm'
@@ -167,14 +169,22 @@ export function getFlexMessage(close, ma5, ma20, rsi, upper, lower, displayName)
   };
 }
 
-function getTradingAdvice(trend, rsi, volatility, consolidation) {
+function getTradingAdvice(trendDirection, rsi, trendStrength) {
   let advice = '';
   
-  // 根據趨勢提供建議
-  if (trend.includes('強勢')) {
-    advice += '趨勢明確，可順勢操作。';
-  } else if (trend.includes('緩步')) {
-    advice += '趨勢溫和，建議分批布局。';
+  // 根據趨勢方向提供建議
+  if (trendDirection.includes('強勢上漲')) {
+    advice += '多頭趨勢明確，可順勢做多，但需注意過熱風險。';
+  } else if (trendDirection.includes('上漲')) {
+    advice += '多頭趨勢，可分批布局，但需留意回檔風險。';
+  } else if (trendDirection.includes('緩步上漲')) {
+    advice += '多頭趨勢但動能較弱，建議謹慎操作，等待更明確訊號。';
+  } else if (trendDirection.includes('強勢下跌')) {
+    advice += '空頭趨勢明確，建議觀望或順勢做空，注意反彈風險。';
+  } else if (trendDirection.includes('下跌')) {
+    advice += '空頭趨勢，建議減碼或觀望，等待止跌訊號。';
+  } else if (trendDirection.includes('緩步下跌')) {
+    advice += '空頭趨勢但壓力較小，可留意反彈機會，但需謹慎。';
   }
 
   // 根據 RSI 提供建議
@@ -184,16 +194,11 @@ function getTradingAdvice(trend, rsi, volatility, consolidation) {
     advice += ' RSI 超賣，可留意反彈機會。';
   }
 
-  // 根據波動程度提供建議
-  if (volatility > 5) {
-    advice += ' 波動較大，建議控制部位。';
-  }
-
-  // 根據盤整狀態提供建議
-  if (consolidation.includes('盤整')) {
-    advice += ' 盤整格局，可採區間操作。';
-  } else if (consolidation.includes('整理')) {
-    advice += ' 區間整理，建議觀望等待突破。';
+  // 根據趨勢強度提供建議
+  if (trendStrength > 3) {
+    advice += ' 趨勢強勁，可考慮加碼。';
+  } else if (trendStrength < 1) {
+    advice += ' 趨勢較弱，建議控制部位。';
   }
 
   return advice;
